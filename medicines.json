@@ -1,0 +1,14 @@
+{
+    "vitamin_c": {
+        "name": "Vitamin C 1000mg",
+        "price": 12000,
+        "description": "Immun tizimini qo'llab-quvvatlash. Har kuni ovqat bilan birga 1 tabletkadan iching.",
+        "photo": null
+    },
+    "био_трибестерон": {
+        "name": "Био Трибестерон",
+        "price": 200,
+        "description": "Foydasi:\n\nЭркак ва аёлларда жинсий ва репродуктив муаммоларда\n\nЭректил дисфункция, эрекцияни узайтириш\n\nБепуштлик ва варикоцеле\n\nЛибидо пасайиши (алоқага хоҳиш)\n\nСперма миқдори ва сифати пасайганда\n\nАёлларда климакс, бачадон ампутациясидаги синдромлар\n\nХайз даврини нормаллаштириш, ҳайз олди синдроми, оғриқни камайтиради\n\nЭндокрин муаммоларда тухум ҳужайра етилмаслигида\n\nQo‘llash mumkin bo‘lmagan holatlar:\n\nИнсулт, инфаркт\n\nХомиладорлик ва лактация\n\nБуйрак касалликлари (креатинин ошиши, етишмовчилик)\n\nПростата бези гиперплазияси\n\n18 ёшгача",
+        "photo": "AgACAgIAAxkBAAMzaKJqTEGlTr-cMrhpDK48BxkHPq8AArUAATIbcnQQSRZ5AQABIsZEiAEAAwIAA3kAAzYE"
+    }
+}
