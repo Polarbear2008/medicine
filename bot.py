@@ -592,7 +592,7 @@ async def send_order_to_channel(order_data: dict, bot: Bot):
             f"⏳ <b>Muddat:</b> {order_data['months']} oy\n"
             f"💰 <b>Summa:</b> {order_data['price']}\n\n"
             f"📍 <b>Yetkazib berish:</b> {order_data['delivery_info'].get('address', 'Manzil kiritilmagan')}\n\n"
-            f"📅 <b>Sana:</b> {order_data.get('timestamp', 'Noma\'lum')}"
+            f"📅 <b>Sana:</b> {order_data.get('timestamp', 'Noma`lum')}"
         )
         
         # Kanalga yuborish
