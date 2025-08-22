@@ -74,5 +74,95 @@
       "longitude": null
     },
     "receipt_photo_id": "AgACAgIAAxkBAAIBjmioozBggLdova-l9npBafwjBZL7AAP7MRv5l0hJEXoZe8djR5gBAAMCAAN5AAM2BA"
+  },
+  "91GC6M85": {
+    "order_id": "91GC6M85",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 Bio Tribesteron",
+    "months": 1,
+    "price": "150,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-22 23:16:34",
+    "delivery_info": {
+      "region": "b",
+      "district": "h",
+      "phone": "h",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAMJaKiz-bKJf_9UJaZ4RzxIk6thlU4AAhz6MRtSzkBJM4L4ynpXNhABAAMCAAN4AAM2BA"
+  },
+  "XVHMST3D": {
+    "order_id": "XVHMST3D",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 Siber Firidan Oil",
+    "months": 3,
+    "price": "85,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-22 23:25:29",
+    "delivery_info": {
+      "region": "w",
+      "district": "w",
+      "phone": "w",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAMZaKi2EFmM3jR5TxecuZZ4hFZtOssAAu78MRvCB0lJJdzSajNzlJ8BAAMCAAN4AAM2BA"
+  },
+  "DKZGW2YU": {
+    "order_id": "DKZGW2YU",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 Bio Tribesteron",
+    "months": 2,
+    "price": "150,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-23 00:07:32",
+    "delivery_info": {
+      "region": "w",
+      "district": "w",
+      "phone": "w",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAMpaKi_69T9GIJyDC-8y2I5OVr5vc8AAhn9MRvCB0lJQaaSNmnJx4ABAAMCAAN5AAM2BA"
+  },
+  "8RKAAWAB": {
+    "order_id": "8RKAAWAB",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 Bio Tribesteron",
+    "months": 2,
+    "price": "150,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-23 00:12:15",
+    "delivery_info": {
+      "region": "Toshkent",
+      "district": "N/A",
+      "phone": "s",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAM5aKjBB-QtDBGELvoofJAncHFS0oMAAi_9MRvCB0lJ7a9nHa6wRloBAAMCAAN4AAM2BA"
+  },
+  "9RWPID88": {
+    "order_id": "9RWPID88",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 Bio Tribesteron",
+    "months": 1,
+    "price": "150,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-23 00:28:21",
+    "delivery_info": {
+      "region": "Toshkent",
+      "district": "N/A",
+      "phone": "s",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAMJaKiz-bKJf_9UJaZ4RzxIk6thlU4AAhz6MRtSzkBJM4L4ynpXNhABAAMCAAN4AAM2BA"
   }
 }

@@ -3,6 +3,9 @@ import datetime
 import json
 import logging
 import os
+import random
+import string
+from typing import Dict, List, Optional
 from typing import Dict, List, Optional
 
 from aiogram import Bot, Dispatcher, types, F
@@ -560,6 +563,22 @@ async def show_order_summary(message: Message, state: FSMContext):
         parse_mode='HTML'
     )
 
+def get_order_keyboard(order_id: str) -> InlineKeyboardMarkup:
+    """Buyurtma uchun tasdiqlash tugmalari"""
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text="✅ Yetkazib berildi",
+                callback_data=f"order_shipped_{order_id}"
+            ),
+            InlineKeyboardButton(
+                text="❌ Bekor qilish",
+                callback_data=f"order_cancel_{order_id}"
+            )
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
 async def send_order_to_channel(order_data: dict, bot: Bot):
     """Buyurtma tafsilotlarini sozlangan kanalga yuborish"""
     try:
@@ -572,26 +591,196 @@ async def send_order_to_channel(order_data: dict, bot: Bot):
             f"💊 <b>Dori:</b> {order_data['medicine']}\n"
             f"⏳ <b>Muddat:</b> {order_data['months']} oy\n"
             f"💰 <b>Summa:</b> {order_data['price']}\n\n"
-            f"📍 <b>Yetkazib berish:</b> {order_data['delivery_info'].get('address', 'Manzil kiritilmagan')}"
+            f"📍 <b>Yetkazib berish:</b> {order_data['delivery_info'].get('address', 'Manzil kiritilmagan')}\n\n"
+            f"📅 <b>Sana:</b> {order_data.get('timestamp', 'Noma\'lum')}"
         )
         
         # Kanalga yuborish
-        await bot.send_message(
-            chat_id=CHANNEL_ID,
-            text=order_text,
-            parse_mode='HTML'
-        )
+        try:
+            # Avval rasmni yuboramiz
+            if order_data.get('receipt_photo_id'):
+                await bot.send_photo(
+                    chat_id=ORDER_CHANNEL,
+                    photo=order_data['receipt_photo_id'],
+                    caption=order_text,
+                    parse_mode='HTML',
+                    reply_markup=get_order_keyboard(order_data['order_id'])
+                )
+            else:
+                await bot.send_message(
+                    chat_id=ORDER_CHANNEL,
+                    text=order_text,
+                    parse_mode='HTML',
+                    reply_markup=get_order_keyboard(order_data['order_id'])
+                )
+                
+        except Exception as e:
+            logging.error(f"Kanalga xabar yuborishda xatolik: {e}")
+            # Try to send error message to admin
+            try:
+                await bot.send_message(
+                    chat_id=ADMIN_IDS[0],
+                    text=f"❌ Kanalga xabar yuborishda xatolik: {e}"
+                )
+            except:
+                pass
         
     except Exception as e:
         logging.error(f"Buyurtma kanalga yuborishda xatolik: {e}")
+
+async def update_order_status(order_id: str, status: str, message: Message):
+    """Update order status and notify user"""
+    orders = load_orders()
+    if order_id in orders:
+        orders[order_id]['status'] = status
+        save_orders(orders)
+        
+        # Update message in channel
+        try:
+            await message.edit_reply_markup(reply_markup=None)
+            status_text = "✅ Yetkazib berildi" if status == "shipped" else "❌ Bekor qilindi"
+            await message.answer(f"{status_text} | Buyurtma ID: {order_id}")
+            
+            # Notify user
+            user_id = orders[order_id].get('user_id')
+            if user_id:
+                status_msg = {
+                    'shipped': "✅ Sizning buyurtmangiz yetkazib berildi!",
+                    'cancelled': "❌ Sizning buyurtmangiz bekor qilindi."
+                }.get(status, "Buyurtma holati yangilandi.")
+                
+                try:
+                    await bot.send_message(
+                        chat_id=user_id,
+                        text=f"{status_msg}\n\nBuyurtma ID: {order_id}"
+                    )
+                except Exception as e:
+                    logging.error(f"Foydalanuvchiga xabar yuborishda xatolik: {e}")
+                    
+        except Exception as e:
+            logging.error(f"Xabar yangilashda xatolik: {e}")
+
+@dp.callback_query(F.data.startswith('order_'))
+async def handle_order_actions(callback: CallbackQuery):
+    """Handle order actions from channel"""
+    try:
+        action, order_id = callback.data.split('_', 1)
+        
+        if action == 'shipped':
+            await update_order_status(order_id, 'shipped', callback.message)
+        elif action == 'cancel':
+            await update_order_status(order_id, 'cancelled', callback.message)
+            
+        await callback.answer()
+    except Exception as e:
+        logging.error(f"Buyurtma amalini bajarishda xatolik: {e}")
+        await callback.answer("Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.", show_alert=True)
+
+async def show_medicines_for_order(message: Message):
+    """Show list of medicines for ordering"""
+    if not MEDICINES:
+        await message.answer("❌ Hozirda mavjud dori-darmonlar ro'yxati topilmadi.")
+        return
+    
+    # Create a list of medicine buttons
+    buttons = []
+    for med_id, med in MEDICINES.items():
+        buttons.append([
+            InlineKeyboardButton(
+                text=f"{med.get('name')} - {med.get('price', 'Narx belgilanmagan')}",
+                callback_data=f"order_{med_id}"
+            )
+        ])
+    
+    # Add back button
+    buttons.append([
+        InlineKeyboardButton(
+            text="🔙 Orqaga",
+            callback_data="back_to_main"
+        )
+    ])
+    
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    await message.answer(
+        "💊 Iltimos, buyurtma bermoqchi bo'lgan doringizni tanlang:",
+        reply_markup=keyboard
+    )
 
 # Command handlers
 dp.message.register(cmd_start, CommandStart())
 dp.message.register(show_address, F.text == "📍 Manzil")
 dp.message.register(show_phone, F.text == "📞 Bog'lanish")
 dp.message.register(show_medicines, F.text == "💊 Dorilar")
+dp.message.register(show_medicines_for_order, F.text == "🛒 Buyurtma berish")
 
-# Add other message handlers here...
+@dp.callback_query(F.data == 'back_to_main')
+async def back_to_main_menu(callback: CallbackQuery):
+    """Handle back to main menu button"""
+    await cmd_start(callback.message)
+    await callback.answer()
+
+@dp.callback_query(F.data == 'confirm_order')
+async def confirm_order(callback: CallbackQuery, state: FSMContext):
+    """Handle order confirmation"""
+    data = await state.get_data()
+    med_id = data.get('selected_medicine')
+    med = MEDICINES.get(med_id, {})
+    
+    # Generate order ID
+    order_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    
+    # Prepare order data
+    order_data = {
+        'order_id': order_id,
+        'user_id': callback.from_user.id,
+        'username': callback.from_user.username,
+        'full_name': callback.from_user.full_name,
+        'medicine': med.get('name', 'N/A'),
+        'months': data.get('months', 1),
+        'price': med.get('price', 'N/A'),
+        'status': 'new',
+        'timestamp': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        'delivery_info': {
+            'region': data.get('delivery_region', 'N/A'),
+            'district': data.get('delivery_district', 'N/A'),
+            'phone': data.get('phone_number', 'N/A'),
+            'address': data.get('delivery_address', 'N/A')
+        },
+        'receipt_photo_id': data.get('receipt_photo_id')
+    }
+    
+    # Save order
+    orders = load_orders()
+    orders[order_id] = order_data
+    save_orders(orders)
+    
+    # Send confirmation to user
+    await callback.message.edit_text(
+        "✅ <b>Buyurtmangiz qabul qilindi!</b>\n\n"
+        f"🆔 Buyurtma raqami: <code>{order_id}</code>\n"
+        f"📅 Sana: {order_data['timestamp']}\n"
+        "\nTez orada siz bilan bog'lanamiz!",
+        parse_mode='HTML'
+    )
+    
+    # Send order to channel
+    await send_order_to_channel(order_data, bot)
+    
+    # Clear state
+    await state.clear()
+    await callback.answer()
+
+@dp.callback_query(F.data == 'cancel_order')
+async def cancel_order(callback: CallbackQuery, state: FSMContext):
+    """Handle order cancellation"""
+    await state.clear()
+    await callback.message.edit_text(
+        "❌ Buyurtma bekor qilindi.\n\n"
+        "Agar sizda savollar bo'lsa, biz bilan bog'lanishingiz mumkin.",
+        parse_mode='HTML'
+    )
+    await callback.answer()
+
 
 async def main():
     # Start the bot
