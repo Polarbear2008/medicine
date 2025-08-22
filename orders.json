@@ -1,1 +1,78 @@
-{}
+{
+  "BQJA5UBV": {
+    "order_id": "BQJA5UBV",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 Bio Tribesteron",
+    "months": 1,
+    "price": "150,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-22 02:05:57.503158",
+    "delivery_info": {
+      "region": "Tashkent",
+      "district": "Not specified",
+      "phone": "🔙 Cancel",
+      "latitude": null,
+      "longitude": null
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAIBAWiniiiapk0DuQnWPoJc0auT6BdfAAIR_zEbPRk4SWm01psfy830AQADAgADeAADNgQ"
+  },
+  "J0KQJSYW": {
+    "order_id": "J0KQJSYW",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 Vitiligo Neo Aktiv",
+    "months": 1,
+    "price": "120,000 UZS",
+    "status": "processing",
+    "timestamp": "2025-08-22 02:11:56.190304",
+    "delivery_info": {
+      "region": "fergana",
+      "district": "rishtan",
+      "phone": "+998 91 693 7793",
+      "latitude": null,
+      "longitude": null
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAIBEmini29nfiHN6emOmWiD93FR8K36AAIU_zEbPRk4SU_YfInZ8jpIAQADAgADeAADNgQ"
+  },
+  "IJHRUTSL": {
+    "order_id": "IJHRUTSL",
+    "user_id": 5747916482,
+    "username": "samandar_vibe",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫",
+    "medicine": "💊 TARPEDA (Herbal Mix)",
+    "months": 1,
+    "price": "95,000 UZS",
+    "status": "shipped",
+    "timestamp": "2025-08-22 02:26:59.394147",
+    "delivery_info": {
+      "region": "Fergana",
+      "district": "sd",
+      "phone": "s",
+      "latitude": null,
+      "longitude": null
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAIBOminjxds8vTJ6umXFASKcCcRiX9EAAKI-TEbosA5SXiKWXSF7CbeAQADAgADeAADNgQ"
+  },
+  "P67Z3WM7": {
+    "order_id": "P67Z3WM7",
+    "user_id": 5747916482,
+    "username": "samandar_vibe",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫",
+    "medicine": "💊 Bio Tribesteron",
+    "months": 1,
+    "price": "150,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-22 22:04:57.400343",
+    "delivery_info": {
+      "region": "Tashkent",
+      "district": "Not specified",
+      "phone": "w",
+      "latitude": null,
+      "longitude": null
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAIBjmioozBggLdova-l9npBafwjBZL7AAP7MRv5l0hJEXoZe8djR5gBAAMCAAN5AAM2BA"
+  }
+}
