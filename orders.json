@@ -164,5 +164,113 @@
       "address": "N/A"
     },
     "receipt_photo_id": "AgACAgIAAxkBAAMJaKiz-bKJf_9UJaZ4RzxIk6thlU4AAhz6MRtSzkBJM4L4ynpXNhABAAMCAAN4AAM2BA"
+  },
+  "CBV8H0V3": {
+    "order_id": "CBV8H0V3",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 TARPEDA (O'simlik aralashmasi)",
+    "months": 2,
+    "price": "95,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-26 23:08:59",
+    "delivery_info": {
+      "region": "Toshkent",
+      "district": "N/A",
+      "phone": "e",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAIC1Git-C0yzWOx03qZxRQxj-AJBVBfAAKy8zEboARwSZ4ZeC1_0QrQAQADAgADeAADNgQ"
+  },
+  "WXQ29M4L": {
+    "order_id": "WXQ29M4L",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 TARPEDA (O'simlik aralashmasi)",
+    "months": 2,
+    "price": "95,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-26 23:09:17",
+    "delivery_info": {
+      "region": "Toshkent",
+      "district": "N/A",
+      "phone": "🔙 Bekor qilish",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAIC1Git-C0yzWOx03qZxRQxj-AJBVBfAAKy8zEboARwSZ4ZeC1_0QrQAQADAgADeAADNgQ"
+  },
+  "CKF9Z067": {
+    "order_id": "CKF9Z067",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 TARPEDA (O'simlik aralashmasi)",
+    "months": 2,
+    "price": "95,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-26 23:09:25",
+    "delivery_info": {
+      "region": "Toshkent",
+      "district": "N/A",
+      "phone": "🛒 Buyurtma berish",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAIC1Git-C0yzWOx03qZxRQxj-AJBVBfAAKy8zEboARwSZ4ZeC1_0QrQAQADAgADeAADNgQ"
+  },
+  "S7SIOK9X": {
+    "order_id": "S7SIOK9X",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 Bio Tribesteron",
+    "months": 1,
+    "price": "150,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-26 23:09:45",
+    "delivery_info": {
+      "region": "e",
+      "district": "e",
+      "phone": "e",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAIC5Git-GIPv3k-NgWUMz-AzAyiJJzGAAK08zEboARwSU3YsYyGMPPFAQADAgADeAADNgQ"
+  },
+  "APJ436DV": {
+    "order_id": "APJ436DV",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 TARPEDA (O'simlik aralashmasi)",
+    "months": 2,
+    "price": "95,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-26 23:12:21",
+    "delivery_info": {
+      "region": "s",
+      "district": "s",
+      "phone": "s",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAIC1Git-C0yzWOx03qZxRQxj-AJBVBfAAKy8zEboARwSZ4ZeC1_0QrQAQADAgADeAADNgQ"
+  },
+  "N3XJ2987": {
+    "order_id": "N3XJ2987",
+    "user_id": 1769729434,
+    "username": "numonov_samandar",
+    "full_name": "𝐒𝐚𝐦𝐚𝐧𝐝𝐚𝐫 Numonov",
+    "medicine": "💊 Bio Tribesteron",
+    "months": 1,
+    "price": "150,000 UZS",
+    "status": "new",
+    "timestamp": "2025-08-26 23:17:57",
+    "delivery_info": {
+      "region": "Fargona",
+      "district": "Rishton",
+      "phone": "936938528",
+      "address": "N/A"
+    },
+    "receipt_photo_id": "AgACAgIAAxkBAAIC5Git-GIPv3k-NgWUMz-AzAyiJJzGAAK08zEboARwSU3YsYyGMPPFAQADAgADeAADNgQ"
   }
 }

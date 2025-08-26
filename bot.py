@@ -19,6 +19,8 @@ from aiogram.types import (
 )
 from aiogram.enums import ParseMode
 from dotenv import load_dotenv
+from supabase import create_client, Client
+from database import db
 
 # Atrof-muhit o'zgaruvchilarini yuklash
 load_dotenv()
@@ -35,12 +37,24 @@ bot = Bot(token=os.getenv('BOT_TOKEN'))
 dp = Dispatcher()
 storage = MemoryStorage()
 
-# Bot sozlamalari
-STORE_PHONE = "+998 9X XXX XX XX"
-STORE_ADDRESS = "Toshkent shahri, [aniq manzil]"
-PAYMENT_CARD = "8600 xxxx xxxx xxxx"
-ADMIN_IDS = [5747916482]  # Admin foydalanuvchi ID larini qo'shing
+# Bot konfiguratsiyasi
+STORE_PHONE = """
++998 99 440 66 64
++998 90 023 06 85"""
+STORE_ADDRESS = """🌍 Toshkent shahri, Yashnobod tumani
+
+🗺️ Manzil:https://maps.app.goo.gl/6S5ABPrbg5NGXQwR9"
+
+📍 Aniq manzil: [Manzil tafsilotlari]"""
+PAYMENT_CARD = """💳 Karta raqami: 5614 6814 2214 5270
+👤 Karta egasi: Karimov Ilyos Atxam ogli"""
+ADMIN_IDS = [5747916482]  # Admin foydalanuvchi ID larini bu yerga qo'shing
 ORDER_CHANNEL = "@zakazlarshifo17"  # Buyurtmalar kanali
+
+# Supabase ulanishi
+supabase_url = os.getenv('SUPABASE_URL')
+supabase_key = os.getenv('SUPABASE_KEY')
+supabase: Client = create_client(supabase_url, supabase_key)
 
 # Dori-darmonlar ma'lumotlari tuzilmasi
 MEDICINES = {
@@ -121,53 +135,27 @@ class Checkout(StatesGroup):
 # Foydalanuvchi buyurtmalari saqlash
 ORDERS_FILE = 'orders.json'
 
-def load_orders() -> dict:
-    """JSON fayldan buyurtmalarni yuklash"""
-    if not os.path.exists(ORDERS_FILE):
-        return {}
-    try:
-        with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except (json.JSONDecodeError, Exception) as e:
-        logger.error(f"Buyurtmalarni yuklashda xatolik: {e}")
-        return {}
+async def load_orders() -> dict:
+    """Load orders from Supabase database"""
+    return await db.get_all_orders()
 
-def save_orders(orders: dict) -> None:
-    """Buyurtmalarni JSON faylga saqlash"""
-    try:
-        with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(orders, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        logger.error(f"Buyurtmalarni saqlashda xatolik: {e}")
+async def save_orders(orders: dict) -> None:
+    """Save orders to Supabase database (legacy function for compatibility)"""
+    # This function is kept for compatibility but orders are now saved individually
+    pass
 
-def save_medicines(medicines: Dict[str, Dict]) -> None:
-    """Dorilarni JSON faylga saqlash"""
-    try:
-        with open('medicines.json', 'w', encoding='utf-8') as f:
-            json.dump(medicines, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        logger.error(f"Dorilarni saqlashda xatolik: {e}")
-        raise
+async def save_medicines(medicines: Dict[str, Dict]) -> None:
+    """Save medicines to Supabase database (legacy function for compatibility)"""
+    # This function is kept for compatibility but medicines are now saved individually
+    pass
 
-def load_medicines() -> Dict[str, Dict]:
-    """JSON fayldan dorilarni yuklash"""
-    try:
-        with open('medicines.json', 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
+async def load_medicines() -> Dict[str, Dict]:
+    """Load medicines from Supabase database"""
+    return await db.get_all_medicines()
 
-# Mavjud ma'lumotlarni yuklash
-orders = load_orders()
-
-# Dorilarni yuklash
-try:
-    with open('medicines.json', 'r', encoding='utf-8') as f:
-        MEDICINES.update(json.load(f))
-except FileNotFoundError:
-    # Agar fayl mavjud bo'lmasa, dastlabki faylni yaratish
-    with open('medicines.json', 'w', encoding='utf-8') as f:
-        json.dump(MEDICINES, f, ensure_ascii=False, indent=2)
+# Initialize empty containers - will be loaded in main()
+orders = {}
+# MEDICINES will be loaded from database in main()
 
 # Foydalanuvchi savatlari saqlash
 user_baskets = {}
@@ -181,6 +169,16 @@ def get_main_menu() -> ReplyKeyboardMarkup:
         [KeyboardButton(text='🌿 O\'simlik dorilar haqida'), KeyboardButton(text='🛒 Buyurtma berish')]
     ]
     return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
+
+def get_main_menu_inline() -> InlineKeyboardMarkup:
+    """Inline asosiy menyu klaviaturasini yaratish"""
+    buttons = [
+        [InlineKeyboardButton(text='📍 Manzil', callback_data='show_address')],
+        [InlineKeyboardButton(text='☎️ Telefon raqami', callback_data='show_phone')],
+        [InlineKeyboardButton(text='🌿 O\'simlik dorilar', callback_data='show_medicines')],
+        [InlineKeyboardButton(text='🛒 Buyurtma berish', callback_data='place_order')]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def get_medicines_menu() -> InlineKeyboardMarkup:
     """Dorilar menyusi klaviaturasini yaratish"""
@@ -313,9 +311,9 @@ async def show_medicine_detail(callback: CallbackQuery):
     med = MEDICINES[med_id]
     text = (
         f"{med['name']}\n\n"
-        f"💊 <b>Foydali xususiyatlari:</b>\n{med['benefits']}\n\n"
-        f"⚠️ <b>Qarshi ko'rsatmalar:</b>\n{med['contraindications']}\n\n"
-        f"💰 <b>Narxi:</b> {med['price']}"
+        f"💊 <b>Foydali xususiyatlari:</b>\n{med.get('benefits', med.get('description', 'Ma\'lumot mavjud emas'))}\n\n"
+        f"⚠️ <b>Qarshi ko'rsatmalar:</b>\n{med.get('contraindications', 'Ma\'lumot mavjud emas')}\n\n"
+        f"💰 <b>Narxi:</b> {med.get('price', 'Narx ko\'rsatilmagan')}"
     )
     
     # Buyurtma tugmasini qo'shish
@@ -664,17 +662,34 @@ async def update_order_status(order_id: str, status: str, message: Message):
 async def handle_order_actions(callback: CallbackQuery):
     """Handle order actions from channel"""
     try:
-        action, order_id = callback.data.split('_', 1)
+        # Extract action and order_id from callback data
+        # Format: order_shipped_123 or order_cancel_123
+        parts = callback.data.split('_')
+        if len(parts) < 3:
+            await callback.answer("❌ Noto'g'ri format!", show_alert=True)
+            return
+            
+        action = parts[1]  # 'shipped' or 'cancel'
+        order_id = parts[2]  # The order ID
         
         if action == 'shipped':
             await update_order_status(order_id, 'shipped', callback.message)
         elif action == 'cancel':
             await update_order_status(order_id, 'cancelled', callback.message)
+        else:
+            await callback.answer("❌ Noma'lum amal!", show_alert=True)
+            return
+            
+        # Remove the buttons after action
+        try:
+            await callback.message.edit_reply_markup(reply_markup=None)
+        except Exception as e:
+            logging.error(f"Tugmalarni olib tashlashda xatolik: {e}")
             
         await callback.answer()
     except Exception as e:
         logging.error(f"Buyurtma amalini bajarishda xatolik: {e}")
-        await callback.answer("Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.", show_alert=True)
+        await callback.answer("❌ Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.", show_alert=True)
 
 async def show_medicines_for_order(message: Message):
     """Show list of medicines for ordering"""
@@ -706,12 +721,128 @@ async def show_medicines_for_order(message: Message):
         reply_markup=keyboard
     )
 
+# Admin command handler
+async def cmd_admin(message: Message):
+    """Handle /admin command - Show admin panel"""
+    if message.from_user.id not in ADMIN_IDS:
+        await message.answer("❌ Sizda admin huquqlari yo'q!")
+        return
+    
+    await message.answer(
+        "👨‍💼 Admin panelga xush kelibsiz! Quyidagi menyudan kerakli bo'limni tanlang:",
+        reply_markup=get_admin_keyboard()
+    )
+
 # Command handlers
 dp.message.register(cmd_start, CommandStart())
+dp.message.register(cmd_admin, Command("admin"))
 dp.message.register(show_address, F.text == "📍 Manzil")
 dp.message.register(show_phone, F.text == "📞 Bog'lanish")
 dp.message.register(show_medicines, F.text == "💊 Dorilar")
 dp.message.register(show_medicines_for_order, F.text == "🛒 Buyurtma berish")
+
+# Add medicine handlers
+@dp.message(MedicineStates.waiting_for_medicine_name)
+async def process_medicine_name(message: Message, state: FSMContext):
+    """Process medicine name and ask for benefits"""
+    await state.update_data(name=message.text)
+    await message.answer("✅ Dori nomi saqlandi.\n\nDorining foydali xususiyatlari haqida ma'lumot bering:")
+    await state.set_state(MedicineStates.waiting_for_medicine_benefits)
+
+@dp.message(MedicineStates.waiting_for_medicine_benefits)
+async def process_medicine_benefits(message: Message, state: FSMContext):
+    """Process medicine benefits and ask for contraindications"""
+    await state.update_data(benefits=message.text)
+    await message.answer("✅ Foydali xususiyatlar saqlandi.\n\nQo'llanilish cheklovlari (agar mavjud bo'lsa):")
+    await state.set_state(MedicineStates.waiting_for_medicine_contraindications)
+
+@dp.message(MedicineStates.waiting_for_medicine_contraindications)
+async def process_medicine_contraindications(message: Message, state: FSMContext):
+    """Process medicine contraindications and ask for price"""
+    await state.update_data(contraindications=message.text)
+    await message.answer("✅ Qo'llanilish cheklovlari saqlandi.\n\nDori narxini kiriting (masalan, 15000 so'm):")
+    await state.set_state(MedicineStates.waiting_for_medicine_price)
+
+@dp.message(MedicineStates.waiting_for_medicine_price)
+async def process_medicine_price(message: Message, state: FSMContext):
+    """Process medicine price and ask for photo"""
+    if not message.text.replace(' ', '').replace('so\'m', '').replace('sum', '').isdigit():
+        await message.answer("❌ Iltimos, faqat raqamlarda kiriting (masalan, 15000 yoki 15000 so'm)")
+        return
+    
+    price = ''.join(c for c in message.text if c.isdigit())
+    await state.update_data(price=f"{price} so'm")
+    await message.answer("✅ Narx saqlandi.\n\nDori rasmini yuboring (ixtiyoriy):")
+    await state.set_state(MedicineStates.waiting_for_medicine_photo)
+
+@dp.message(MedicineStates.waiting_for_medicine_photo, F.photo | F.text)
+async def process_medicine_photo(message: Message, state: FSMContext):
+    """Process medicine photo and save the medicine"""
+    data = await state.get_data()
+    
+    # Handle photo if provided
+    photo_id = None
+    if message.photo:
+        photo_id = message.photo[-1].file_id
+    
+    # Generate a unique ID for the medicine
+    import uuid
+    med_id = str(uuid.uuid4())[:8]
+    
+    # Prepare medicine data
+    medicine_data = {
+        'id': med_id,
+        'name': data.get('name', ''),
+        'benefits': data.get('benefits', ''),
+        'contraindications': data.get('contraindications', ''),
+        'price': data.get('price', 'Narx kiritilmagan'),
+        'photo': photo_id if photo_id else None,
+        'description': data.get('benefits', '')  # Using benefits as description for now
+    }
+    
+    try:
+        # Save to database
+        success = await db.add_medicine(med_id, medicine_data)
+        
+        if success:
+            # Update in-memory cache
+            MEDICINES[med_id] = medicine_data
+            
+            # Send confirmation message with medicine details
+            response = (
+                "✅ Dori muvaffaqiyatli qo'shildi!\n\n"
+                f"🏷️ Nomi: {medicine_data['name']}\n"
+                f"💊 Foydali xususiyatlari: {medicine_data['benefits'][:50]}...\n"
+                f"⚠️ Qo'llanilish cheklovlari: {medicine_data['contraindications'][:50]}...\n"
+                f"💰 Narxi: {medicine_data['price']}"
+            )
+            
+            # Send photo if available
+            if photo_id:
+                await message.answer_photo(
+                    photo_id,
+                    caption=response,
+                    reply_markup=get_admin_keyboard()
+                )
+            else:
+                await message.answer(
+                    response,
+                    reply_markup=get_admin_keyboard()
+                )
+        else:
+            await message.answer(
+                "❌ Xatolik yuz berdi. Dori qo'shishda xatolik yuz berdi.",
+                reply_markup=get_admin_keyboard()
+            )
+    except Exception as e:
+        logging.error(f"Error adding medicine: {e}")
+        await message.answer(
+            "❌ Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.",
+            reply_markup=get_admin_keyboard()
+        )
+    
+    # Reset state
+    await state.clear()
 
 @dp.callback_query(F.data == 'back_to_main')
 async def back_to_main_menu(callback: CallbackQuery):
@@ -749,10 +880,8 @@ async def confirm_order(callback: CallbackQuery, state: FSMContext):
         'receipt_photo_id': data.get('receipt_photo_id')
     }
     
-    # Save order
-    orders = load_orders()
-    orders[order_id] = order_data
-    save_orders(orders)
+    # Save order to database
+    await db.add_order(order_data)
     
     # Send confirmation to user
     await callback.message.edit_text(
@@ -761,6 +890,12 @@ async def confirm_order(callback: CallbackQuery, state: FSMContext):
         f"📅 Sana: {order_data['timestamp']}\n"
         "\nTez orada siz bilan bog'lanamiz!",
         parse_mode='HTML'
+    )
+    
+    # Send main menu
+    await callback.message.answer(
+        "Asosiy menyuga qaytdingiz:",
+        reply_markup=get_main_menu()
     )
     
     # Send order to channel
@@ -779,10 +914,203 @@ async def cancel_order(callback: CallbackQuery, state: FSMContext):
         "Agar sizda savollar bo'lsa, biz bilan bog'lanishingiz mumkin.",
         parse_mode='HTML'
     )
+    
+    # Send main menu
+    await callback.message.answer(
+        "Asosiy menyuga qaytdingiz:",
+        reply_markup=get_main_menu()
+    )
+    await callback.answer()
+
+# Admin callback handlers
+@dp.callback_query(F.data == 'admin_orders')
+async def admin_orders(callback: CallbackQuery):
+    """Show admin orders"""
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer("❌ Sizda admin huquqlari yo'q!")
+        return
+    
+    try:
+        # Get all orders from the database
+        orders = await db.get_all_orders()
+        if not orders:
+            await callback.message.answer("📭 Hozircha buyurtmalar mavjud emas!")
+            return
+            
+        # Show the first 5 orders (you can add pagination later)
+        response = "📋 So'ngi buyurtmalar:\n\n"
+        for order in orders[:5]:
+            response += f"🆔 Buyurtma: {order['id']}\n"
+            response += f"👤 Mijoz: {order.get('customer_name', 'Noma\'lum')}\n"
+            response += f"📞 Tel: {order.get('phone', 'Noma\'lum')}\n"
+            response += f"📅 Sana: {order.get('created_at', 'Noma\'lum')}\n"
+            response += f"📦 Holati: {order.get('status', 'Yangi')}\n\n"
+        
+        await callback.message.answer(response)
+        await callback.answer()
+    except Exception as e:
+        logging.error(f"Xatolik yuz berdi: {e}")
+        await callback.message.answer("❌ Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.")
+        await callback.answer()
+
+@dp.callback_query(F.data == 'admin_products')
+async def admin_products(callback: CallbackQuery):
+    """Show admin products"""
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer("❌ Sizda admin huquqlari yo'q!")
+        return
+    
+    try:
+        # Get all medicines from the database
+        medicines = await db.get_medicines()
+        if not medicines:
+            await callback.message.answer("ℹ️ Hozircha dorilar mavjud emas!")
+            return
+            
+        # Show the first 5 medicines (you can add pagination later)
+        response = "💊 Mavjud dorilar ro'yxati:\n\n"
+        for med in medicines[:5]:
+            response += f"{med['name']} - {med.get('price', 'Narx kiritilmagan')}\n"
+        
+        await callback.message.answer(response)
+        await callback.answer()
+    except Exception as e:
+        logging.error(f"Xatolik yuz berdi: {e}")
+        await callback.message.answer("❌ Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.")
+        await callback.answer()
+
+@dp.callback_query(F.data == 'add_medicine')
+async def add_medicine_start(callback: CallbackQuery, state: FSMContext):
+    """Start adding a new medicine"""
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer("❌ Sizda admin huquqlari yo'q!")
+        return
+    
+    await callback.message.answer("💊 Yangi dori qo'shish uchun quyidagi ma'lumotlarni kiriting:\n\nDori nomi:")
+    await state.set_state(MedicineStates.waiting_for_medicine_name)
+    await callback.answer()
+
+@dp.callback_query(F.data == 'edit_medicine')
+async def edit_medicine_start(callback: CallbackQuery, state: FSMContext):
+    """Start editing a medicine"""
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer("❌ Sizda admin huquqlari yo'q!")
+        return
+    
+    await callback.message.answer("✏️ Tahrirlash uchun dori ID sini yuboring:")
+    await state.set_state(MedicineStates.waiting_for_medicine_id)
+    await callback.answer()
+
+@dp.callback_query(F.data == 'delete_medicine')
+async def delete_medicine_start(callback: CallbackQuery, state: FSMContext):
+    """Start deleting a medicine"""
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer("❌ Sizda admin huquqlari yo'q!")
+        return
+    
+    await callback.message.answer("🗑️ O'chirish uchun dori ID sini yuboring:")
+    await state.set_state(MedicineStates.confirming_medicine_deletion)
+    await callback.answer()
+
+@dp.callback_query(F.data == 'admin_stats')
+async def admin_stats(callback: CallbackQuery):
+    """Show admin statistics"""
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer("❌ Sizda admin huquqlari yo'q!")
+        return
+    
+    try:
+        # Get statistics from the database
+        stats = {
+            'total_medicines': len(await db.get_medicines()),
+            'total_orders': len(await db.get_all_orders()),
+            'pending_orders': len([o for o in await db.get_all_orders() if o.get('status') == 'Yangi']),
+        }
+        
+        response = "📊 Statistika:\\n\\n"
+        response += f"💊 Jami dorilar: {stats['total_medicines']}\\n"
+        response += f"📦 Jami buyurtmalar: {stats['total_orders']}\\n"
+        response += f"⏳ Kutilayotgan buyurtmalar: {stats['pending_orders']}"
+        
+        await callback.message.answer(response)
+        await callback.answer()
+    except Exception as e:
+        logging.error(f"Xatolik yuz berdi: {e}")
+        await callback.message.answer("❌ Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.")
+        await callback.answer()
+
+# Inline menu callback handlers
+@dp.callback_query(F.data == 'back_to_main')
+async def show_address_callback(callback: CallbackQuery):
+    """Show store address"""
+    await callback.message.edit_text(
+        f"📍 <b>Bizning manzilimiz:</b>\n\n{STORE_ADDRESS}",
+        parse_mode='HTML',
+        reply_markup=get_main_menu_inline()
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == 'show_address')
+async def show_address_callback(callback: CallbackQuery):
+    """Show store address"""
+    await callback.message.edit_text(
+        f"📍 <b>Bizning manzilimiz:</b>\n\n{STORE_ADDRESS}",
+        parse_mode='HTML',
+        reply_markup=get_main_menu_inline()
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == 'show_phone')
+async def show_phone_callback(callback: CallbackQuery):
+    """Show store phone"""
+    await callback.message.edit_text(
+        f"☎️ <b>Bizning telefon raqamimiz:</b>\n\n{STORE_PHONE}",
+        parse_mode='HTML',
+        reply_markup=get_main_menu_inline()
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == 'show_medicines')
+async def show_medicines_callback(callback: CallbackQuery):
+    """Show medicines list"""
+    await callback.message.edit_text(
+        "🌿 <b>Mavjud o'simlik dorilar:</b>",
+        reply_markup=get_medicines_menu(),
+        parse_mode='HTML'
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == 'place_order')
+async def place_order_callback(callback: CallbackQuery):
+    """Show order menu"""
+    await callback.message.edit_text(
+        "🛒 <b>Buyurtma berish:</b>\n\nQaysi dorini buyurtma qilmoqchisiz?",
+        reply_markup=get_medicines_menu(),
+        parse_mode='HTML'
+    )
     await callback.answer()
 
 
 async def main():
+    # Initialize database data
+    global MEDICINES, orders
+    try:
+        MEDICINES = await load_medicines()
+        orders = await load_orders()
+        logging.info(f"Loaded {len(MEDICINES)} medicines and {len(orders)} orders from database")
+    except Exception as e:
+        logging.error(f"Error loading data from database: {e}")
+        # Fallback to hardcoded medicines if database fails
+        MEDICINES = {
+            'bio_tribesteron': {
+                'name': '💊 Bio Tribesteron',
+                'benefits': 'Tabiiy testosteron va energiya ko\'chiruvchi',
+                'contraindications': '18 yoshgacha yoki gormon-sezgir kasalliklarga ega bo\'lgan odamlarga tavsiya qilinmaydi',
+                'price': '150,000 UZS'
+            }
+        }
+        orders = {}
+    
     # Start the bot
     logging.info("Bot is starting...")
     try:
