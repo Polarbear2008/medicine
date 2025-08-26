@@ -48,7 +48,8 @@ STORE_ADDRESS = """🌍 Toshkent shahri, Yashnobod tumani
 📍 Aniq manzil: [Manzil tafsilotlari]"""
 PAYMENT_CARD = """💳 Karta raqami: 5614 6814 2214 5270
 👤 Karta egasi: Karimov Ilyos Atxam ogli"""
-ADMIN_IDS = [5747916482]  # Admin foydalanuvchi ID larini bu yerga qo'shing
+# Load admin IDs from environment variable
+ADMIN_IDS = [int(admin_id.strip()) for admin_id in os.getenv('ADMIN_ID', '').split(',') if admin_id.strip().isdigit()]
 ORDER_CHANNEL = "@zakazlarshifo17"  # Buyurtmalar kanali
 
 # Supabase ulanishi
@@ -309,11 +310,15 @@ async def show_medicine_detail(callback: CallbackQuery):
         return
     
     med = MEDICINES[med_id]
+    benefits = med.get('benefits') or med.get('description', "Ma'lumot mavjud emas")
+    contraindications = med.get('contraindications', "Ma'lumot mavjud emas")
+    price = med.get('price', "Narx ko'rsatilmagan")
+    
     text = (
         f"{med['name']}\n\n"
-        f"💊 <b>Foydali xususiyatlari:</b>\n{med.get('benefits', med.get('description', 'Ma\'lumot mavjud emas'))}\n\n"
-        f"⚠️ <b>Qarshi ko'rsatmalar:</b>\n{med.get('contraindications', 'Ma\'lumot mavjud emas')}\n\n"
-        f"💰 <b>Narxi:</b> {med.get('price', 'Narx ko\'rsatilmagan')}"
+        f"💊 <b>Foydali xususiyatlari:</b>\n{benefits}\n\n"
+        f"⚠️ <b>Qarshi ko'rsatmalar:</b>\n{contraindications}\n\n"
+        f"💰 <b>Narxi:</b> {price}"
     )
     
     # Buyurtma tugmasini qo'shish
@@ -940,11 +945,18 @@ async def admin_orders(callback: CallbackQuery):
         # Show the first 5 orders (you can add pagination later)
         response = "📋 So'ngi buyurtmalar:\n\n"
         for order in orders[:5]:
-            response += f"🆔 Buyurtma: {order['id']}\n"
-            response += f"👤 Mijoz: {order.get('customer_name', 'Noma\'lum')}\n"
-            response += f"📞 Tel: {order.get('phone', 'Noma\'lum')}\n"
-            response += f"📅 Sana: {order.get('created_at', 'Noma\'lum')}\n"
-            response += f"📦 Holati: {order.get('status', 'Yangi')}\n\n"
+            customer_name = order.get('customer_name', "Noma'lum")
+            phone = order.get('phone', "Noma'lum")
+            date = order.get('created_at', "Noma'lum")
+            status = order.get('status', 'Yangi')
+            
+            response += (
+                f"🆔 Buyurtma: {order['id']}\n"
+                f"👤 Mijoz: {customer_name}\n"
+                f"📞 Tel: {phone}\n"
+                f"📅 Sana: {date}\n"
+                f"📦 Holati: {status}\n\n"
+            )
         
         await callback.message.answer(response)
         await callback.answer()
