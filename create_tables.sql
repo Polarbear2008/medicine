@@ -17,8 +17,7 @@ CREATE TABLE IF NOT EXISTS medicines (
     contraindications TEXT,
     description TEXT,
     price TEXT,
-    photo TEXT, -- Telegram file ID (fallback)
-    medicine_image_id UUID REFERENCES images(id), -- Supabase Storage reference
+    image_url TEXT, -- URL to the medicine image
     is_active BOOLEAN DEFAULT true,
     added_by_admin BIGINT REFERENCES admins(user_id),
     created_at TIMESTAMP DEFAULT NOW(),
