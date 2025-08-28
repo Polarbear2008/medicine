@@ -672,7 +672,7 @@ async def send_order_to_channel(order_data: dict, bot: Bot):
             f"⏳ <b>Muddat:</b> {order_data.get('months', 1)} oy\n"
             f"💰 <b>Summa:</b> {order_data.get('price', 'N/A')}\n\n"
             f"📍 <b>Yetkazib berish:</b> {address}\n\n"
-            f"📅 <b>Sana:</b> {order_data.get('timestamp', 'Noma\'lum')}"
+            f"📅 <b>Sana:</b> {order_data.get('timestamp', 'Nomalum')}"
         )
         
         # Kanalga yuborish
@@ -1166,7 +1166,7 @@ async def process_medicine_id_for_edit(message: Message, state: FSMContext):
         f"💊 Foydali xususiyatlari: {med.get('benefits', 'N/A')}\n"
         f"⚠️ Qarshi ko'rsatmalar: {med.get('contraindications', 'N/A')}\n"
         f"💰 Narxi: {med.get('price', 'N/A')}\n"
-        f"📷 Rasm: {'Mavjud' if med.get('photo') else 'Yo\'q'}\n\n"
+        f"📷 Rasm: {'Mavjud' if med.get('photo') else 'Yoq'}\n\n"
         "Qaysi maydonni tahrirlashni xohlaysiz?\n"
         "1 - Nomi\n"
         "2 - Foydali xususiyatlari\n"
